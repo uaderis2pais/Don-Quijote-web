@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { RESTAURANT_INFO } from '../config/restaurantConfig';
+import { sanitizeInputText } from '../utils/security';
 
 const CartContext = createContext();
 
@@ -115,14 +116,18 @@ export const CartProvider = ({ children }) => {
     message += `\n*Total: ${formatPrice(subtotal)}*\n`;
     message += `*Modalidad:* ${orderTypeLabel}\n`;
 
-    if (customerName.trim()) {
-      message += `*Nombre:* ${customerName.trim()}\n`;
+    const cleanName = sanitizeInputText(customerName, 60);
+    const cleanAddress = sanitizeInputText(customerAddress, 120);
+    const cleanNotes = sanitizeInputText(customerNotes, 250);
+
+    if (cleanName) {
+      message += `*Nombre:* ${cleanName}\n`;
     }
-    if (orderType === 'delivery' && customerAddress.trim()) {
-      message += `*Dirección:* ${customerAddress.trim()}\n`;
+    if (orderType === 'delivery' && cleanAddress) {
+      message += `*Dirección:* ${cleanAddress}\n`;
     }
-    if (customerNotes.trim()) {
-      message += `*Aclaraciones:* ${customerNotes.trim()}\n`;
+    if (cleanNotes) {
+      message += `*Aclaraciones:* ${cleanNotes}\n`;
     }
 
     message += `\n¡Muchas gracias! Aguardo confirmación y tiempo estimado.`;

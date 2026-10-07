@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   ShoppingBag,
@@ -10,12 +10,17 @@ import {
   Bike,
   FileText,
   MessageCircle,
+  AlertCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { RESTAURANT_INFO } from '../config/restaurantConfig';
+import { isBotHoneypotFilled, checkRateLimit } from '../utils/security';
 
 export const CartSidebar = () => {
+  const [formError, setFormError] = useState(null);
+  const [honeypot, setHoneypot] = useState('');
+
   const {
     items,
     isCartOpen,
@@ -35,6 +40,38 @@ export const CartSidebar = () => {
     setCustomerNotes,
     getWhatsAppCheckoutUrl,
   } = useCart();
+
+  const handleCheckoutClick = (e) => {
+    setFormError(null);
+
+    // 1. Bot check
+    if (isBotHoneypotFilled(honeypot)) {
+      e.preventDefault();
+      return;
+    }
+
+    // 2. Name validation
+    if (!customerName || !customerName.trim()) {
+      e.preventDefault();
+      setFormError('Por favor indicá tu nombre antes de enviar el pedido.');
+      return;
+    }
+
+    // 3. Address validation for delivery
+    if (orderType === 'delivery' && (!customerAddress || !customerAddress.trim())) {
+      e.preventDefault();
+      setFormError('Por favor indicá tu dirección para el envío a domicilio.');
+      return;
+    }
+
+    // 4. Rate limit check (cooldown)
+    const rate = checkRateLimit('cart_checkout', 5);
+    if (!rate.allowed) {
+      e.preventDefault();
+      setFormError(rate.message);
+      return;
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -181,6 +218,18 @@ export const CartSidebar = () => {
                         </p>
                       </div>
 
+                      {/* Anti-spam Honeypot */}
+                      <div className="opacity-0 pointer-events-none absolute -left-[9999px]" aria-hidden="true">
+                        <input
+                          type="text"
+                          name="cart_bot_trap"
+                          value={honeypot}
+                          onChange={(e) => setHoneypot(e.target.value)}
+                          tabIndex="-1"
+                          autoComplete="off"
+                        />
+                      </div>
+
                       {/* Nombre y Apellido */}
                       <div>
                         <label className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block mb-1">
@@ -190,6 +239,7 @@ export const CartSidebar = () => {
                           <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
                           <input
                             type="text"
+                            maxLength={60}
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             placeholder="Tu nombre y apellido"
@@ -245,6 +295,7 @@ export const CartSidebar = () => {
                           </label>
                           <input
                             type="text"
+                            maxLength={120}
                             value={customerAddress}
                             onChange={(e) => setCustomerAddress(e.target.value)}
                             placeholder="Calle, número, piso / dpto"
@@ -262,6 +313,7 @@ export const CartSidebar = () => {
                           <FileText className="w-4 h-4 absolute left-3 top-3 text-stone-500" />
                           <textarea
                             rows={2}
+                            maxLength={250}
                             value={customerNotes}
                             onChange={(e) => setCustomerNotes(e.target.value)}
                             placeholder="Ej: Horario estimado de retiro, indicaciones especiales..."
@@ -286,14 +338,23 @@ export const CartSidebar = () => {
                     </span>
                   </div>
 
+                  {/* Form Error Banner */}
+                  {formError && (
+                    <div className="p-2.5 rounded-xl bg-amber-950/60 border border-amber-800/80 text-amber-300 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+                      <span>{formError}</span>
+                    </div>
+                  )}
+
                   {/* Green WhatsApp Action Button - Matching Genaro */}
                   <motion.a
                     href={getWhatsAppCheckoutUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={handleCheckoutClick}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full py-3.5 px-4 rounded-xl font-sans font-bold text-sm bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center justify-center gap-2 shadow-lg transition-colors"
+                    className="w-full py-3.5 px-4 rounded-xl font-sans font-bold text-sm bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center justify-center gap-2 shadow-lg transition-colors cursor-pointer"
                   >
                     <MessageCircle className="w-5 h-5 fill-white stroke-none" />
                     <span>Enviar Pedido por WhatsApp</span>

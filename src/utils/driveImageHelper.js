@@ -65,8 +65,14 @@ export function formatImageUrl(url, category = 'default') {
     return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
   }
 
-  // Already a valid web URL or local path
-  return trimmed;
+  // Verify that it's a safe HTTP/HTTPS URL or local static path
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith('https://') || lower.startsWith('http://') || (lower.startsWith('/') && !lower.startsWith('//'))) {
+    return trimmed;
+  }
+
+  // If URL has unsafe protocol (e.g. javascript:, data:), return safe fallback
+  return CATEGORY_FALLBACKS[category] || CATEGORY_FALLBACKS.default;
 }
 
 /**

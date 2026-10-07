@@ -2,14 +2,40 @@ import React, { useState } from 'react';
 import { MapPin, Clock, Phone, MessageSquare, Send, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { RESTAURANT_INFO } from '../config/restaurantConfig';
+import { sanitizeInputText, isBotHoneypotFilled, checkRateLimit } from '../utils/security';
 
 export const VisitUsSection = () => {
   const [suggestionType, setSuggestionType] = useState('mesa');
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [errorNotice, setErrorNotice] = useState(null);
 
   const handleSendSuggestion = (e) => {
     e.preventDefault();
+    setErrorNotice(null);
+
+    // 1. Anti-bot honeypot check
+    if (isBotHoneypotFilled(honeypot)) {
+      return; // Discard automated bot attempt
+    }
+
+    // 2. Client-side rate limiting / cooldown check
+    const rateCheck = checkRateLimit('contact_form', 10);
+    if (!rateCheck.allowed) {
+      setErrorNotice(rateCheck.message);
+      return;
+    }
+
+    // 3. Input sanitization & length limits
+    const cleanName = sanitizeInputText(name, 60);
+    const cleanMessage = sanitizeInputText(message, 350);
+
+    if (cleanMessage.length < 3) {
+      setErrorNotice('Por favor ingresá un mensaje para tu consulta.');
+      return;
+    }
+
     const typeLabel = {
       mesa: 'Reserva de mesa',
       sabor: 'Sugerencia de nuevo sabor',
@@ -17,9 +43,9 @@ export const VisitUsSection = () => {
       otro: 'Consulta general',
     }[suggestionType] || 'Consulta';
 
-    const text = `¡Hola Don Quijote Pizza Bar!\n\n*Tipo:* ${typeLabel}\n*Nombre:* ${name || 'Cliente'}\n*Mensaje:* ${message || 'Hola, quería hacer una consulta.'}`;
+    const text = `¡Hola Don Quijote Pizza Bar!\n\n*Tipo:* ${typeLabel}\n*Nombre:* ${cleanName || 'Cliente'}\n*Mensaje:* ${cleanMessage}`;
     const url = `https://wa.me/${RESTAURANT_INFO.whatsappNumber}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -254,8 +280,21 @@ export const VisitUsSection = () => {
 
               {/* Inputs */}
               <div className="space-y-3">
+                {/* Anti-spam Bot Honeypot (invisible to humans) */}
+                <div className="opacity-0 pointer-events-none absolute -left-[9999px]" aria-hidden="true">
+                  <input
+                    type="text"
+                    name="bot_field_honey"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex="-1"
+                    autoComplete="off"
+                  />
+                </div>
+
                 <input
                   type="text"
+                  maxLength={60}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Tu Nombre y Apellido"
@@ -264,11 +303,18 @@ export const VisitUsSection = () => {
 
                 <textarea
                   rows={3}
+                  maxLength={350}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Escribí tu mensaje o consulta..."
                   className="w-full px-4 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-white placeholder-stone-500 text-xs focus:outline-none focus:border-stone-600 resize-none transition-colors"
                 />
+
+                {errorNotice && (
+                  <p className="text-[11px] text-amber-400 bg-amber-950/40 border border-amber-800/60 rounded-lg px-3 py-1.5 text-center">
+                    {errorNotice}
+                  </p>
+                )}
               </div>
             </div>
 

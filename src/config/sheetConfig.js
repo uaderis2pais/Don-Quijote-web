@@ -37,10 +37,10 @@ export function extractSpreadsheetId(input) {
   const matchPub = trimmed.match(/\/spreadsheets\/d\/e\/([a-zA-Z0-9_-]+)/);
   if (matchPub) return matchPub[1];
 
-  // If input is already just the ID
-  if (/^[a-zA-Z0-9_-]{20,}$/.test(trimmed)) {
+  // If input is already just the ID (Google Sheet IDs are typically 33-44 chars)
+  if (/^[a-zA-Z0-9_-]{20,70}$/.test(trimmed)) {
     return trimmed;
   }
 
-  return trimmed;
+  return '';
 }

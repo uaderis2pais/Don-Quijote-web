@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useMenu } from '../context/MenuContext';
 import { SHEET_CONFIG } from '../config/sheetConfig';
+import { isValidGoogleSheetInput } from '../utils/security';
 
 export const GoogleSheetSyncModal = ({ isOpen, onClose }) => {
   const {
@@ -29,16 +30,26 @@ export const GoogleSheetSyncModal = ({ isOpen, onClose }) => {
 
   const [inputUrl, setInputUrl] = useState(sheetId || '');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [inputError, setInputError] = useState(null);
 
   const handleSave = (e) => {
     e.preventDefault();
-    saveSheetId(inputUrl);
+    setInputError(null);
+
+    const trimmed = inputUrl.trim();
+    if (trimmed && !isValidGoogleSheetInput(trimmed)) {
+      setInputError('El enlace o ID no es válido. Debe ser una URL de Google Sheets o un ID alfanumérico.');
+      return;
+    }
+
+    saveSheetId(trimmed);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   const handleResetToDefault = () => {
     setInputUrl('');
+    setInputError(null);
     saveSheetId('');
   };
 
@@ -159,6 +170,11 @@ export const GoogleSheetSyncModal = ({ isOpen, onClose }) => {
                     <span>Guardar y Conectar</span>
                   </button>
                 </div>
+                {inputError && (
+                  <p className="text-xs text-amber-400 mt-2 p-2 bg-amber-950/40 border border-amber-800/60 rounded-lg">
+                    {inputError}
+                  </p>
+                )}
                 {saveSuccess && (
                   <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5" />
