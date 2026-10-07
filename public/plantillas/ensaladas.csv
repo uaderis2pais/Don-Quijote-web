@@ -1,0 +1,13 @@
+id,nombre,descripcion,precio,imagen,disponible,destacado
+1,"Cesar","*Hojas verdes, pollo, crutones, queso sardo, cherrys, aderezo cesar* Porción",9500,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,"Recomendado"
+2,"Mediterranea","*Hojas verdes, cherrys, queso tybo, aceitunas, jamón crudo y guacamole* Porción",8900,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+3,"Mixta","*Lechuga, tomate, zanahoria y cebolla* Porción",7800,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+4,"Papas fritas","Porción",8500,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+5,"Batatas fritas","Porción",9500,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+6,"Papas fritas a caballo","Porción",10000,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+7,"Papas cheddar","*cheddar, panceta y verdeo* Porción",10500,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+8,"Rabas","Porción",18000,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+9,"Aros de cebolla","Porción",11000,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+10,"Bastoncitos de muzza","Porción",11000,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+11,"Nuggets pollo","Porción",9500,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
+12,"Menu infantil","Nuggets o patitas de pollo con papas fritas Porción",9500,"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",SI,""
